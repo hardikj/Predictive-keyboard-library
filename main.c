@@ -5,9 +5,9 @@
 
 typedef struct node
 {
-	char a;
-	struct node *next;
-	struct node *prev;
+    char a;
+    struct node *next;
+    struct node *prev;
 }node;
 
 typedef struct master
@@ -38,43 +38,100 @@ node *new_node(node *n,char ch)
 mn *insert_end(mn *m,char ch)
 {
     node *n;
-    n = create_node(n,ch);
-    if(m->head = NULL)
+    node *temp;
+    n = new_node(n,ch);
+    if(m->start == NULL)
     {
-        m->head = n;
+        m->start = n;
         m->end = n;
     } 
+
     else
     {
-        n->put 
+        n->prev = m->end;
+        //m->end = (node *)malloc(sizeof(node));
+        (m->end)->next = n;
         m->end = n; 
     }
+return m;
 }
 
-mn *start(mn *m)
+void traverse(mn *m)
 {
+    node *temp;
+    temp = m->start;
+    while(temp != NULL)
+    {
+        printw("%c",temp->a);
+        refresh();
+        temp = temp->next;
+     }
+    
+    
+}
+
+mn *delete_node(mn *m)
+{
+    if((m->start)->next == NULL)
+    {
+        clear();
+        m->start = NULL;
+    }
+    else
+    {    
+        node *temp;
+        temp = m->end;
+        m->end =(m->end)->prev;
+        (m->end)->next = NULL;
+        temp->prev = NULL;
+        free(temp);
+        //printw("%c",(m->end)->a);
+        //printw("%c",temp);
+        //printw("check");
+    }
+    return m;  
+}
+
+
+
+mn *start(mn *m)
+{ 
+    node *temp;
     char dump,ch= 'T';
     while(ch != 27)
     {
+        //scanf("%c",&ch);
         ch = getch();
+        if (ch == 127)
+        {    
+            
+            m = delete_node(m);
+        }
+        else
+        {    
         m = insert_end(m,ch);
+        }
+        clear();
+        refresh();
+        traverse(m);    
+        //printw("%c",ch);
     }
-        printf("\npress any key to exit");
-        
+        printw("\npress any key to exit");
+        refresh();
 }
 int main()
 {
-        initscr();
-        noecho();
-        cbreak();
-	mn *m;
-	m = initialise(m);
-	printf("hello welcome to the editor we support auto complition! \n");
-	printf("You can start writing now\n");
+    initscr();
+    noecho();
+    cbreak();
+    mn *m;
+    m = initialise(m);
+    printw("hello welcome to the editor we support auto complition! \n");
+    printw("You can start writing now\n");
+    refresh();
+    m = start(m);
+    getch();
+    endwin();
 
-        m = start(m);
-        getch();
-        endwin();
-
-	return 0;
+    return 0;
 }
