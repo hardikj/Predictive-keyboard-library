@@ -3,17 +3,17 @@
 #include <ncurses.h>
 
 
-typedef struct node
+typedef struct ll
 {
     char a;
-    struct node *next;
-    struct node *prev;
-}node;
+    struct ll *next;
+    struct ll *prev;
+}ll;
 
 typedef struct master
 {
-    struct node *start;
-    struct node *end;
+    struct ll *start;
+    struct ll *end;
     int count;
 }mn;
 
@@ -26,9 +26,9 @@ mn *initialise(mn *m)
     return m;
 }
 
-node *new_node(node *n,char ch)
+ll *new_node(ll *n,char ch)
 {
-    n =(node *)malloc(sizeof(node));
+    n =(ll *)malloc(sizeof(ll));
     n->a = ch;
     n->next = NULL;
     n->prev = NULL;  
@@ -37,8 +37,8 @@ node *new_node(node *n,char ch)
 
 mn *insert_end(mn *m,char ch)
 {
-    node *n;
-    node *temp;
+    ll *n;
+    ll *temp;
     n = new_node(n,ch);
     if(m->start == NULL)
     {
@@ -58,7 +58,7 @@ return m;
 
 void traverse(mn *m)
 {
-    node *temp;
+    ll *temp;
     temp = m->start;
     while(temp != NULL)
     {
@@ -79,7 +79,7 @@ mn *delete_node(mn *m)
     }
     else
     {    
-        node *temp;
+        ll *temp;
         temp = m->end;
         m->end =(m->end)->prev;
         (m->end)->next = NULL;
@@ -92,32 +92,67 @@ mn *delete_node(mn *m)
     return m;  
 }
 
+char* get_key(mn *m)
+{
+	ll *temp;
+	char *key;
+	int i=0;
+	temp = m->end;
+	while(strcmp((temp->prev)->a," ")==0)
+	{
+		
+		key[i] = temp->a;
+		temp = temp->prev;
+		i++;
+	}
+	
+return key;
+}
 
 
 mn *start(mn *m)
 { 
-    node *temp;
-    char dump,ch= 'T';
+    ll *temp;
+    char dump,c;
+	int ch;
+	char *key;
     while(ch != 27)
     {
-        //scanf("%c",&ch);
         ch = getch();
-        if (ch == 127)
-        {    
-            
-            m = delete_node(m);
-        }
-        else
-        {    
-        m = insert_end(m,ch);
-        }
-        clear();
-        refresh();
-        traverse(m);    
-        //printw("%c",ch);
-    }
+		c = ch;
+
+        switch(ch)
+		{
+			case 127:
+        	{	   
+				m = delete_node(m);
+				clear();
+                refresh();
+                traverse(m);
+				break;
+			}
+			
+			case 9:
+			{
+				key =  get_key(m);
+				printw("%s",key);
+				break;
+			}		
+			default:
+			{    
+				m = insert_end(m,c);
+				clear();
+				refresh();
+				traverse(m);    
+			}
+		}
+	}
+		
+		clear();
+		refresh();
         printw("\npress any key to exit");
         refresh();
+	
 }
 int main()
 {

@@ -14,6 +14,13 @@ typedef struct trie_node{
 	char word[20];
 }node;
 
+typedef struct stack{   //structure for stracks
+
+	struct stack *next;
+	char key[20];
+
+}stack; 
+
 
 //function for creating a leaf node 
 node *NewLeaf(char keyWord[20]) 
@@ -45,8 +52,38 @@ node *NewIntern()
 	return t_node; 
 } 
 
+stack* push(stack *top, char key[])
+{
+	stack *n;
+	n = (stack *)malloc(sizeof(node));
+	
+	strcpy(n->key,key);
+	
+	if(top!=NULL)
+	{
+		top = n;
+	}	
+	else
+	{
+		n->next = top;
+		top = n;
+	}
+	return top;
+}	
 
-
+stack* pop(stack *top)
+{
+	stack *n;
+	if(top=NULL)
+	{
+		printf("stack is empty");
+		return top;
+	}
+	n = top;
+	top = top->next;
+	free(n);
+	return top;
+}
 
 void Find(node *trie, char keyWord[20]) 
 { 
@@ -87,24 +124,28 @@ void Find(node *trie, char keyWord[20])
 	} 
 }
 
-void Tostack(node *trie)
+void Tostack(node *trie, stack *top)
 {
     int count;
     if(trie)
     {
         if(trie->NotLeaf!= true)
         {
+			printf("word goes in stack ->");
             puts(trie->word);
-			//push					   //this will be pushed to stack
+			push(top,trie->word);					   //this will be pushed to stack
         }
 
 
         for(count = 26; count >=0 ; count--)
-            Tostack(trie->pChildren[count]);
+            Tostack(trie->pChildren[count],top);
     }
+
 }
 
-void Complete(node *trie, char keyWord[20])
+
+
+void Complete(node *trie, char keyWord[20], stack *top)
 {
 	node *index,*next, *data;
 	int i,count = 0;
@@ -130,7 +171,7 @@ void Complete(node *trie, char keyWord[20])
 	else
 	if((count>=strlen(keyWord)))
 	{
-		Tostack(next);	
+		Tostack(next,top);	
 	}
 	
 }
@@ -282,18 +323,20 @@ return trie;
 
 int main() 
 { 
+	stack *top;
  	node *trie; 
 	char UserInputWord[20], cont_insert=' '; 
     char dump;
 	int option = 0; //stores the user's input(the chosen option) 
- 	trie = NULL; 
+ 	trie = NULL;
+	top = NULL; 
 	label_menu: 
-	while( option != 7) 
+	while( option != 8) 
  		{ 
 		//display menu 
  		printf("\n Menu: \n"); 
  		printf("___________________________________________\n"); 
- 		printf("\n1. Create tree\n 2. Insert node\n 3. Search for node\n 4. Display tree\n 5.complete\n 6. Populate tree\n 7. Exit \n"); 
+ 		printf("\n1. Create tree\n 2. Insert node\n 3. Search for node\n 4. Display tree\n 5.complete\n 6. Populate tree\n 7. pop \n8. Exit \n"); 
 		//get user input 
  		printf("\n\n\nInput choice: "); 
  		scanf("%d",&option); 
@@ -331,16 +374,19 @@ int main()
 				DisplayTrie(trie,0); 
 			break; 
 
-			case 5:
+			case 5: // autocomplete
 				printf("Searched word :"); 
                 scanf("%c",&dump); 
                 gets(UserInputWord);
-				Complete(trie,UserInputWord);
+				Complete(trie,UserInputWord,top);
 			break;
 			case 6:// popoulate tree
 				trie = pTrain(trie);
 				break;
-			case 7: //Exit
+			case 7: 
+				pop(top);
+				break;
+			case 8: //Exit
 			exit(1); 
 			break; 
 
