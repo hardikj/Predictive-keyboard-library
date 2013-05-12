@@ -45,7 +45,98 @@ node *NewIntern()
 	return t_node; 
 } 
 
-node *Insert(node *trie, char keyWord[20]) 
+
+
+
+void Find(node *trie, char keyWord[20]) 
+{ 
+
+	node *next, *index, *data; 
+	int count; 
+
+	next = trie; 
+	if(next == NULL) //trie is empty 
+	{ 
+		printf("Word not found in trie !!!!\n");
+		exit(1); 
+	} 
+	else 
+		index = next;// index - the current node from trie 
+
+	count = 0; // start searching for the first letter of the word(index of letter in word is 0) 
+	while((index->NotLeaf == true) && (count < strlen(keyWord)) && (index->pChildren[keyWord[count]-'a'] != NULL)) 
+	{ 
+		next = index->pChildren[keyWord[count]-'a'];
+		index = next; 
+		count ++ ; 
+	} 
+	if(next == NULL) 
+		printf("Word not found in trie !!!!\n"); 
+	else 	
+	{ 
+		data = next; 
+		//the string is in a leaf 
+		if(!strcmp(data->word,keyWord)) 
+			printf("Key exists --- Word found in trie !!!\n"); 
+		else//the string is in the blank pointer(prefix for others words stored in trie) 
+			if((data->pChildren[26]) && !strcmp(data->pChildren[26]->word,keyWord)) 
+				printf("Key exists --- Word found in trie !!!!\n") ; 
+
+		else 
+			printf("Word not found in trie !!!!\n"); 
+	} 
+}
+
+void Tostack(node *trie)
+{
+    int count;
+    if(trie)
+    {
+        if(trie->NotLeaf!= true)
+        {
+            puts(trie->word);
+			//push					   //this will be pushed to stack
+        }
+
+
+        for(count = 26; count >=0 ; count--)
+            Tostack(trie->pChildren[count]);
+    }
+}
+
+void Complete(node *trie, char keyWord[20])
+{
+	node *index,*next, *data;
+	int i,count = 0;
+	
+	
+	next = trie;
+	if(next == NULL)
+	{
+		printf("trie is emplty\n");
+	}
+	else
+		index = next;
+
+	while((index->NotLeaf==true)&&(count < strlen(keyWord))&&(index->pChildren[keyWord[count]-'a']!=NULL))
+	{
+		next = index->pChildren[keyWord[count]-'a'];
+		index = next;
+		count++;
+	}
+
+	if(next == NULL)
+		return;
+	else
+	if((count>=strlen(keyWord)))
+	{
+		Tostack(next);	
+	}
+	
+}
+
+
+node* Insert(node *trie, char keyWord[20]) 
 { 
  	node *next, *index, *parent; 
  	node *new_leaf, *data, *new_index; 
@@ -115,25 +206,28 @@ node *Insert(node *trie, char keyWord[20])
  		parent->pChildren[data->word[inWordIndex]-'a'] = oldChildren; 
  		parent->pChildren[keyWord[inWordIndex]-'a'] = newWord; 
  	} 
-	else 
-	if(data->word[0] != '\0') 
-		if(strlen(data->word) <= prefixLenght) 
- 		{ 
- 		parent->pChildren[26] = oldChildren; 
- 		parent->pChildren[keyWord[prefixLenght]-'a'] = newWord; 
- 		} 
-	else 
- 	{ 
- 		parent->pChildren[26] = newWord; 
- 		parent->pChildren[data->word[prefixLenght]-'a'] = oldChildren; 
- 	} 
-	else
- 	{ 
-		for (int count = 0 ; count < 27;count++) 
- 			parent->pChildren[count] = oldChildren->pChildren[count]; 
-		 parent->pChildren[26] = newWord; 
- 	} 
-	return trie; 
+	else   
+		if(data->word[0] != '\0') 
+			if(strlen(data->word) <= prefixLenght) 
+			{ 
+				parent->pChildren[26] = oldChildren; 
+				parent->pChildren[keyWord[prefixLenght]-'a'] = newWord; 
+			} 
+    
+			else 
+			{ 
+				parent->pChildren[26] = newWord; 
+				parent->pChildren[data->word[prefixLenght]-'a'] = oldChildren; 
+			} 
+		else
+		{	 
+			for (int count = 0 ; count < 27; count++) 
+               {
+				parent->pChildren[count] = oldChildren->pChildren[count]; 
+               }
+			parent->pChildren[26] = newWord; 
+		} 
+return trie; 
 }
 
 void DisplayTrie(node *trie, int nivel) 
@@ -154,19 +248,52 @@ void DisplayTrie(node *trie, int nivel)
  	} 
 }
 
+node* pTrain(node *trie)    //populating words from the dictionary
+{
+	char ch,key[20];
+	int i=0;
+	FILE *f;
+	f = fopen("words.txt","r");
+	
+	if(f==NULL)
+	{
+		return trie;
+	}
+	while(ch!=EOF )
+		{
+			ch = fgetc(f);
+			if(ch != '\n')
+			{
+				key[i] = ch;
+				i++;
+			}
+			else
+			{	
+				trie = Insert(trie,key);
+				puts(key);
+				for(i=0;i<20;i++)
+					key[i]=0;
+				i=0;
+			}
+		}
+	fclose(f);
+return trie;
+}
+
 int main() 
 { 
  	node *trie; 
 	char UserInputWord[20], cont_insert=' '; 
+    char dump;
 	int option = 0; //stores the user's input(the chosen option) 
  	trie = NULL; 
 	label_menu: 
-	while( option != 5) 
+	while( option != 7) 
  		{ 
 		//display menu 
  		printf("\n Menu: \n"); 
  		printf("___________________________________________\n"); 
- 		printf("1. Create tree\n 2. Insert node\n 3. Search for node\n 4. Display tree\n 5. Exit\n"); 
+ 		printf("\n1. Create tree\n 2. Insert node\n 3. Search for node\n 4. Display tree\n 5.complete\n 6. Populate tree\n 7. Exit \n"); 
 		//get user input 
  		printf("\n\n\nInput choice: "); 
  		scanf("%d",&option); 
@@ -176,7 +303,8 @@ int main()
 				while(cont_insert != 'n') 
  				{ 
 					// get user input string 
- 					printf("\nInsert word :"); 
+ 					printf("\nInsert word :");
+					scanf("%c",&dump); 
  					gets(UserInputWord); 
  					trie = Insert(trie,UserInputWord); 
  				printf("\n Continue ? <y/n>"); 
@@ -186,12 +314,14 @@ int main()
 
 			case 2: //Insert node 
 				printf("\nInsert word :"); 
+				scanf("%c",&dump);
 				gets(UserInputWord); 
-				insert(trie,UserInputWord); 
+				trie = Insert(trie,UserInputWord); 
 			break; 
 
 			case 3: //Search for node 
-				printf("Searched word :");  
+				printf("Searched word :"); 
+				scanf("%c",&dump); 
 				gets(UserInputWord); 
  				Find(trie,UserInputWord); 
 			break; 
@@ -201,7 +331,17 @@ int main()
 				DisplayTrie(trie,0); 
 			break; 
 
-			case 5: //Exit 
+			case 5:
+				printf("Searched word :"); 
+                scanf("%c",&dump); 
+                gets(UserInputWord);
+				Complete(trie,UserInputWord);
+			break;
+			case 6:// popoulate tree
+				trie = pTrain(trie);
+				break;
+			case 7: //Exit
+			exit(1); 
 			break; 
 
 			default: 
