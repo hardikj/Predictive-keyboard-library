@@ -56,15 +56,16 @@ stack* push(stack *top, char key[])
 {
 	stack *n;
 	n = (stack *)malloc(sizeof(node));
-	
+	n->next=NULL;
 	strcpy(n->key,key);
-	
-	if(top!=NULL)
+	if(top == NULL)
 	{
 		top = n;
+		puts(top->key);		
 	}	
 	else
 	{
+			
 		n->next = top;
 		top = n;
 	}
@@ -74,15 +75,17 @@ stack* push(stack *top, char key[])
 stack* pop(stack *top)
 {
 	stack *n;
-	if(top=NULL)
+	if(top == NULL)
 	{
 		printf("stack is empty");
 		return top;
 	}
 	n = top;
+	puts(top->key);
 	top = top->next;
 	free(n);
-	return top;
+
+return top;
 }
 
 void Find(node *trie, char keyWord[20]) 
@@ -124,7 +127,7 @@ void Find(node *trie, char keyWord[20])
 	} 
 }
 
-void Tostack(node *trie, stack *top)
+stack* Tostack(node *trie, stack *top)
 {
     int count;
     if(trie)
@@ -133,19 +136,19 @@ void Tostack(node *trie, stack *top)
         {
 			printf("word goes in stack ->");
             puts(trie->word);
-			push(top,trie->word);					   //this will be pushed to stack
+		    top = push(top,trie->word);					   //this will be pushed to stack
         }
 
 
         for(count = 26; count >=0 ; count--)
-            Tostack(trie->pChildren[count],top);
+            top = Tostack(trie->pChildren[count],top);
     }
-
+return top;
 }
 
 
 
-void Complete(node *trie, char keyWord[20], stack *top)
+stack* Complete(node *trie, char keyWord[20], stack *top)
 {
 	node *index,*next, *data;
 	int i,count = 0;
@@ -167,13 +170,14 @@ void Complete(node *trie, char keyWord[20], stack *top)
 	}
 
 	if(next == NULL)
-		return;
+		return top;
 	else
-	if((count>=strlen(keyWord)))
+	if(count>=strlen(keyWord))
 	{
-		Tostack(next,top);	
+		top = Tostack(next,top);	
 	}
-	
+
+return top;	
 }
 
 
@@ -321,9 +325,11 @@ node* pTrain(node *trie)    //populating words from the dictionary
 return trie;
 }
 
+
+
 int main() 
 { 
-	stack *top;
+	stack *top,*n;
  	node *trie; 
 	char UserInputWord[20], cont_insert=' '; 
     char dump;
@@ -378,13 +384,13 @@ int main()
 				printf("Searched word :"); 
                 scanf("%c",&dump); 
                 gets(UserInputWord);
-				Complete(trie,UserInputWord,top);
+				top = Complete(trie,UserInputWord,top);
 			break;
 			case 6:// popoulate tree
 				trie = pTrain(trie);
 				break;
 			case 7: 
-				pop(top);
+				top = pop(top);
 				break;
 			case 8: //Exit
 			exit(1); 
